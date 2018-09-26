@@ -20,7 +20,7 @@ public class CommandProcessorAddNature extends CommandProcessorAdaptor<CommandPr
     public void process(Command c) {
         SWBase base = contentService.get(c.id);
         if (base == null) {
-            throw new IllegalStateException();
+            throw new IllegalStateException("Unable to find object: " + c.id);
         }
         Nature nature = natureService.getNature(c.type);
         if (nature == null) {

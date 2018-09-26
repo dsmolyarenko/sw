@@ -56,7 +56,7 @@ public class MapAccessor {
     }
 
     public String setProperty(String name, String value) {
-        return map.put(getKey(name), value);
+        return map.put(getKey(name), value != null ? value : "");
     }
 
     public void setProperties(Map<String, String> properties) {
@@ -124,6 +124,10 @@ public class MapAccessor {
             return false;
         }
         return true;
+    }
+
+    public void clear() {
+        map.clear();
     }
 
     private String getKey(String name) {

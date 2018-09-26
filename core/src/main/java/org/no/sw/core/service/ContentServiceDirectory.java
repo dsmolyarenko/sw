@@ -89,6 +89,7 @@ public class ContentServiceDirectory implements ContentService {
             document = new Document();
             document.add(new StringField("id", id, Store.YES));
             writer.addDocument(document);
+            writer.commit();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -146,6 +147,7 @@ public class ContentServiceDirectory implements ContentService {
 
         try (IndexWriter writer = new IndexWriter(directory, createConfig())) {
             writer.updateDocument(term, document);
+            writer.commit();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

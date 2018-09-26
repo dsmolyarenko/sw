@@ -46,12 +46,13 @@ public class SWBase {
         getProperties().forEach((k, v) -> {
             sb.append("  ");
             sb.append(k);
-            sb.append(":");
+            sb.append("=");
             sb.append(v);
             sb.append(",");
+            sb.append("\n");
         });
         if (!getProperties().isEmpty()) {
-            sb.deleteCharAt(sb.length() - 1);
+            sb.deleteCharAt(sb.length() - 2); // comma
         }
         sb.append("}");
         return sb.toString();

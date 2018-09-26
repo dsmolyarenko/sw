@@ -33,11 +33,13 @@ public abstract class Nature {
     public boolean add(SWBase base) {
         MapAccessor accessor = MapAccessor.of(base.getProperties(), getType());
         accessor.setProperties(getTypeProperties());
-        return false;
+        return true;
     }
 
     public boolean remove(SWBase base) {
-        return false;
+        MapAccessor accessor = MapAccessor.of(base.getProperties(), getType());
+        accessor.clear();
+        return true;
     }
 
     protected String getType() {

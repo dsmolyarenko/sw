@@ -1,4 +1,4 @@
-package org.no.sw.core.model;
+package org.no.sw.core.util;
 
 import java.util.TreeMap;
 
