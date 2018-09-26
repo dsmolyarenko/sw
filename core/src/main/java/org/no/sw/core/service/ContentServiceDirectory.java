@@ -127,10 +127,10 @@ public class ContentServiceDirectory implements ContentService {
             if (field == null) {
                 a = true;
             } else {
-                if (t.getProperty(fieldName) == null) {
+                if (t.getProperties().get(fieldName) == null) {
                     d = true;
                 } else {
-                    if (!t.getProperty(fieldName).equals(field.stringValue())) {
+                    if (!t.getProperties().get(fieldName).equals(field.stringValue())) {
                         d = true;
                         a = true;
                     }
@@ -140,7 +140,7 @@ public class ContentServiceDirectory implements ContentService {
                 document.removeField(fieldName);
             }
             if (a) {
-                document.add(new StringField(fieldName, t.getProperty(fieldName), Field.Store.YES));
+                document.add(new StringField(fieldName, t.getProperties().get(fieldName), Field.Store.YES));
             }
         }
 

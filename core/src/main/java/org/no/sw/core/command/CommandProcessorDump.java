@@ -7,17 +7,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ProcessorDump implements Processor<ProcessorDump.C> {
+public class CommandProcessorDump extends CommandProcessorAdaptor<CommandProcessorDump.Command> {
 
     @Autowired
     private ContentService contentService;
 
     @Override
-    public void process(C command) {
+    public void process(Command command) {
         contentService.getAll().forEach(b -> log.info(b));
     }
 
-    public static class C implements Command {
+    public static class Command implements CommandProcessor.Command {
 
     }
 
