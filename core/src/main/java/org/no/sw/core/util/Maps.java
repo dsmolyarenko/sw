@@ -5,8 +5,8 @@ import java.util.Map;
 
 public class Maps {
 
-    public static Builder of() {
-        return new Builder();
+    public static <K, V> Builder<K, V> of() {
+        return new Builder<K, V>();
     }
 
     public static class Builder<K, V> {

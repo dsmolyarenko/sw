@@ -1,6 +1,7 @@
 package org.no.sw.core;
 
 import org.no.sw.core.command.CommandProcessorAddNature;
+import org.no.sw.core.command.CommandProcessorConteinerMoveTo;
 import org.no.sw.core.command.CommandProcessorDump;
 import org.no.sw.core.model.SWBase;
 import org.no.sw.core.service.CommandProcessorService;
@@ -10,7 +11,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 
 public class Bootstrap {
-    public static void main(String[] arguments) {
+    public static void main(String[] arguments) throws Throwable {
 
 
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("META-INF/spring-core.xml");
@@ -22,13 +23,21 @@ public class Bootstrap {
 
         CommandProcessorService commandProcessorService = context.getBean(CommandProcessorService.class);
 
-        String swWorldId = identyService.getId();
+        String swWorldId = identyService.getRootId();
 
         SWBase swWorld = contentService.create(swWorldId);
+        SWBase swItem1 = contentService.create(identyService.getId());
+        SWBase swItem2 = contentService.create(identyService.getId());
+        SWBase swItem3 = contentService.create(identyService.getId());
 
-        commandProcessorService.submit(new CommandProcessorAddNature.Command(swWorldId, "base"));
-        commandProcessorService.submit(new CommandProcessorAddNature.Command(swWorldId, "container"));
+        commandProcessorService.submit(new CommandProcessorAddNature.Command(swWorld.getId(), "base"));
+        commandProcessorService.submit(new CommandProcessorAddNature.Command(swWorld.getId(), "container"));
+        commandProcessorService.submit(new CommandProcessorAddNature.Command(swItem1.getId(), "base"));
+        commandProcessorService.submit(new CommandProcessorAddNature.Command(swItem2.getId(), "base"));
+        commandProcessorService.submit(new CommandProcessorAddNature.Command(swItem3.getId(), "base"));
+        commandProcessorService.submit(new CommandProcessorConteinerMoveTo.Command(swItem1.getId(), swWorld.getId()));
+        commandProcessorService.submit(new CommandProcessorConteinerMoveTo.Command(swItem2.getId(), swWorld.getId()));
+        commandProcessorService.submit(new CommandProcessorConteinerMoveTo.Command(swItem3.getId(), swWorld.getId()));
         commandProcessorService.submit(new CommandProcessorDump.Command());
-
     }
 }

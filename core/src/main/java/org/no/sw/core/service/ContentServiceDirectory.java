@@ -45,7 +45,7 @@ public class ContentServiceDirectory implements ContentService {
         try (IndexReader reader = DirectoryReader.open(directory)) {
             final IndexSearcher searcher = new IndexSearcher(reader);
             Term term = new Term("id", id);
-            TopDocs result = searcher.search(new TermQuery(term), 1);
+            TopDocs result = searcher.search(new TermQuery(term), 10);
             if (result.totalHits == 0) {
                 return null;
             }
@@ -89,7 +89,6 @@ public class ContentServiceDirectory implements ContentService {
             document = new Document();
             document.add(new StringField("id", id, Store.YES));
             writer.addDocument(document);
-            writer.commit();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -97,12 +96,16 @@ public class ContentServiceDirectory implements ContentService {
     }
 
     @Override
-    public SWBase update(SWBase t) {
+    public void update(SWBase... bases) {
+    	updateDocuments(createDocumentsUpdate(bases));
+    }
+
+    private Consumer<IndexWriter> createDocumentUpdate(SWBase t) {
         Term term = new Term("id", t.getId());
 
         Document document;
         try (IndexReader reader = DirectoryReader.open(directory)) {
-            TopDocs result = new IndexSearcher(reader).search(new TermQuery(term), 1);
+            TopDocs result = new IndexSearcher(reader).search(new TermQuery(term), 10);
             if (result.totalHits == 0) {
                 return null;
             }
@@ -145,19 +148,35 @@ public class ContentServiceDirectory implements ContentService {
             }
         }
 
-        try (IndexWriter writer = new IndexWriter(directory, createConfig())) {
-            writer.updateDocument(term, document);
+        return w -> w.updateDocument(term, document);
+    }
+
+    private List<Consumer<IndexWriter>> createDocumentsUpdate(SWBase... bases) {
+    	List<Consumer<IndexWriter>> updates = new ArrayList<>();
+    	for (SWBase base : bases) {
+    		updates.add(createDocumentUpdate(base));
+    	}
+    	return updates;
+    }
+
+    private void updateDocuments(List<Consumer<IndexWriter>> updaters) {
+    	try (IndexWriter writer = new IndexWriter(directory, createConfig())) {
+    		for (Consumer<IndexWriter> updater : updaters) {
+            	updater.accept(writer);
+            }
             writer.commit();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-
-        return map(document);
     }
 
     private IndexWriterConfig createConfig() {
         IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer);
         indexWriterConfig.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
         return indexWriterConfig;
+    }
+
+    private interface Consumer<E> {
+    	void accept(E e) throws IOException;
     }
 }

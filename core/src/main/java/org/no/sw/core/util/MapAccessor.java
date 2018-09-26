@@ -2,6 +2,7 @@ package org.no.sw.core.util;
 
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Objects;
 
 public class MapAccessor {
 
@@ -55,8 +56,8 @@ public class MapAccessor {
         return count;
     }
 
-    public String setProperty(String name, String value) {
-        return map.put(getKey(name), value != null ? value : "");
+    public boolean setProperty(String name, String value) {
+    	return !Objects.equals(value, map.put(getKey(name), value != null ? value : ""));
     }
 
     public void setProperties(Map<String, String> properties) {

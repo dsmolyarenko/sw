@@ -12,5 +12,5 @@ public interface ContentService {
 
     SWBase create(String id);
 
-    SWBase update(SWBase t);
+    void update(SWBase... bases);
 }

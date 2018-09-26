@@ -10,10 +10,11 @@ public class NatureBase extends Nature {
 
     @Override
     protected Map<String, String> getTypeProperties() {
-        return Maps.of()
+        return Maps.<String, String>of()
                 .put("name")
                 .put("weight")
                 .put("size")
+                .put("parent")
                 .build();
     }
 }

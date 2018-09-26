@@ -48,12 +48,8 @@ public class SWBase {
             sb.append(k);
             sb.append("=");
             sb.append(v);
-            sb.append(",");
             sb.append("\n");
         });
-        if (!getProperties().isEmpty()) {
-            sb.deleteCharAt(sb.length() - 2); // comma
-        }
         sb.append("}");
         return sb.toString();
     }
