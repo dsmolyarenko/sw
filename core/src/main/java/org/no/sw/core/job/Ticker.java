@@ -1,28 +1,24 @@
 package org.no.sw.core.job;
 
 import org.no.sw.core.event.EventTick;
+import org.no.sw.core.service.EventProcessorService;
 import org.no.sw.core.service.IdentyService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
 public class Ticker {
 
-    private final ApplicationEventPublisher publisher;
-
-    private final IdentyService identyService;
+    @Autowired
+    private IdentyService identyService;
 
     @Autowired
-    public Ticker(ApplicationEventPublisher publisher,
-            IdentyService identyService) {
-        this.publisher = publisher;
-        this.identyService = identyService;
+    private EventProcessorService eventProcessorService;
+
+    //@Scheduled(cron = "*/5 * * * * *")
+    public void tick() {
+        EventTick e = new EventTick(identyService.getId());
+        eventProcessorService.submit(identyService.getRootId(), e);
     }
 
-    @Scheduled(cron = "*/5 * * * * *")
-    public void tickerMain() {
-        publisher.publishEvent(new EventTick(identyService.getId()));
-    }
 }

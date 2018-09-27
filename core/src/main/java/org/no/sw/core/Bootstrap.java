@@ -1,7 +1,7 @@
 package org.no.sw.core;
 
 import org.no.sw.core.command.CommandProcessorAddNature;
-import org.no.sw.core.command.CommandProcessorConteinerMoveTo;
+import org.no.sw.core.command.CommandProcessorContainerMoveTo;
 import org.no.sw.core.command.CommandProcessorDump;
 import org.no.sw.core.model.SWBase;
 import org.no.sw.core.service.CommandProcessorService;
@@ -35,9 +35,9 @@ public class Bootstrap {
         commandProcessorService.submit(new CommandProcessorAddNature.Command(swItem1.getId(), "base"));
         commandProcessorService.submit(new CommandProcessorAddNature.Command(swItem2.getId(), "base"));
         commandProcessorService.submit(new CommandProcessorAddNature.Command(swItem3.getId(), "base"));
-        commandProcessorService.submit(new CommandProcessorConteinerMoveTo.Command(swItem1.getId(), swWorld.getId()));
-        commandProcessorService.submit(new CommandProcessorConteinerMoveTo.Command(swItem2.getId(), swWorld.getId()));
-        commandProcessorService.submit(new CommandProcessorConteinerMoveTo.Command(swItem3.getId(), swWorld.getId()));
+        commandProcessorService.submit(new CommandProcessorContainerMoveTo.Command(swItem1.getId(), swWorld.getId()));
+        commandProcessorService.submit(new CommandProcessorContainerMoveTo.Command(swItem2.getId(), swWorld.getId()));
+        commandProcessorService.submit(new CommandProcessorContainerMoveTo.Command(swItem3.getId(), swWorld.getId()));
         commandProcessorService.submit(new CommandProcessorDump.Command());
     }
 }

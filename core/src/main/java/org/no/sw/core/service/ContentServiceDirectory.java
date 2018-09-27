@@ -21,12 +21,17 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
 import org.no.sw.core.model.SWBase;
+import org.no.sw.core.util.MapAccessor;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -41,11 +46,20 @@ public class ContentServiceDirectory implements ContentService {
     }
 
     @Override
+    public MapAccessor getProperties(String id) {
+        SWBase base = get(id);
+        if (base == null) {
+            return null;
+        }
+        return MapAccessor.of(base.getProperties());
+    }
+
+    @Override
     public SWBase get(String id) {
         try (IndexReader reader = DirectoryReader.open(directory)) {
             final IndexSearcher searcher = new IndexSearcher(reader);
             Term term = new Term("id", id);
-            TopDocs result = searcher.search(new TermQuery(term), 10);
+            TopDocs result = searcher.search(new TermQuery(term), 1);
             if (result.totalHits == 0) {
                 return null;
             }
@@ -58,9 +72,21 @@ public class ContentServiceDirectory implements ContentService {
     @Override
     public List<SWBase> getAll() {
         try (IndexReader reader = DirectoryReader.open(directory)) {
+            final IndexSearcher searcher = new IndexSearcher(reader);
+
+            QueryParser qp = new QueryParser("", new StandardAnalyzer());
+
+            Query q;
+            try {
+                q = qp.parse("*:*");
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+            TopDocs topDocs = searcher.search(q, Integer.MAX_VALUE);
+
             List<SWBase> result = new ArrayList<>();
-            for (int i = 0; i < reader.numDocs(); i++) {
-                Document document = reader.document(i);
+            for (ScoreDoc sd : topDocs.scoreDocs) {
+                Document document = reader.document(sd.doc);
                 result.add(map(document));
             }
             return result;
@@ -97,7 +123,7 @@ public class ContentServiceDirectory implements ContentService {
 
     @Override
     public void update(SWBase... bases) {
-    	updateDocuments(createDocumentsUpdate(bases));
+        updateDocuments(createDocumentsUpdate(bases));
     }
 
     private Consumer<IndexWriter> createDocumentUpdate(SWBase t) {
@@ -105,7 +131,7 @@ public class ContentServiceDirectory implements ContentService {
 
         Document document;
         try (IndexReader reader = DirectoryReader.open(directory)) {
-            TopDocs result = new IndexSearcher(reader).search(new TermQuery(term), 10);
+            TopDocs result = new IndexSearcher(reader).search(new TermQuery(term), 1);
             if (result.totalHits == 0) {
                 return null;
             }
@@ -152,17 +178,17 @@ public class ContentServiceDirectory implements ContentService {
     }
 
     private List<Consumer<IndexWriter>> createDocumentsUpdate(SWBase... bases) {
-    	List<Consumer<IndexWriter>> updates = new ArrayList<>();
-    	for (SWBase base : bases) {
-    		updates.add(createDocumentUpdate(base));
-    	}
-    	return updates;
+        List<Consumer<IndexWriter>> updates = new ArrayList<>();
+        for (SWBase base : bases) {
+            updates.add(createDocumentUpdate(base));
+        }
+        return updates;
     }
 
     private void updateDocuments(List<Consumer<IndexWriter>> updaters) {
-    	try (IndexWriter writer = new IndexWriter(directory, createConfig())) {
-    		for (Consumer<IndexWriter> updater : updaters) {
-            	updater.accept(writer);
+        try (IndexWriter writer = new IndexWriter(directory, createConfig())) {
+            for (Consumer<IndexWriter> updater : updaters) {
+                updater.accept(writer);
             }
             writer.commit();
         } catch (IOException e) {
@@ -177,6 +203,6 @@ public class ContentServiceDirectory implements ContentService {
     }
 
     private interface Consumer<E> {
-    	void accept(E e) throws IOException;
+        void accept(E e) throws IOException;
     }
 }

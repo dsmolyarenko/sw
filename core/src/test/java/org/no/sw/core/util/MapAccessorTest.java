@@ -1,10 +1,12 @@
 package org.no.sw.core.util;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.TreeMap;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.no.sw.core.util.MapAccessor;
 
 public class MapAccessorTest {
 
@@ -38,10 +40,44 @@ public class MapAccessorTest {
     public void testPropertySets() {
         MapAccessor accessor = MapAccessor.of(new TreeMap<>());
 
+        accessor.setProperty("test", "");
+        Assert.assertEquals(0, accessor.getPropertySize("test"));
+        
         accessor.setProperty("test", "v0");
         Assert.assertEquals(1, accessor.getPropertySize("test"));
 
-        accessor.setProperty("test", "v0,v2");
+        accessor.setProperty("test", "v0,v1");
         Assert.assertEquals(2, accessor.getPropertySize("test"));
+
+        accessor.setProperty("test", "v0,v1,v2");
+        Assert.assertEquals(3, accessor.getPropertySize("test"));
+    }
+
+    @Test
+    public void testPropertySetNavigation() {
+        MapAccessor accessor = MapAccessor.of(new TreeMap<>());
+
+        List<String> result = new ArrayList<>();
+
+        result.clear();
+        accessor.setProperty("test", "");
+        accessor.getPropertyIterator("test", v -> result.add(v));
+        Assert.assertEquals(0, result.size());
+
+        result.clear();
+        accessor.setProperty("test", "v0");
+        accessor.getPropertyIterator("test", v -> result.add(v));
+        Assert.assertEquals(1, result.size());
+
+        result.clear();
+        accessor.setProperty("test", "v0,v1");
+        accessor.getPropertyIterator("test", v -> result.add(v));
+        Assert.assertEquals(Arrays.asList("v0", "v1"), result);
+
+        result.clear();
+        accessor.setProperty("test", "v0,v1,v2");
+        accessor.getPropertyIterator("test", v -> result.add(v));
+        Assert.assertEquals(Arrays.asList("v0", "v1", "v2"), result);
+
     }
 }

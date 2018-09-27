@@ -29,7 +29,9 @@ public class CommandProcessorServiceLocal implements CommandProcessorService {
         if (commandProcessor == null) {
             log.warn("Command processor not found: {}" + command);
         } else {
-            commands.add(() -> commandProcessor.process(command));
+            commands.offer(() -> {
+                commandProcessor.process(command);
+            });
         }
     }
 
