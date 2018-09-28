@@ -1,0 +1,7 @@
+- 'id': gift_cup
+  'parent': base,container_default
+  'base:name': Cup
+  'base:weight': 1
+  'base:size': 1
+  'container:capacityWeight': 5
+  'container:capacitySize': 1

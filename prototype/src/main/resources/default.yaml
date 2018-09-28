@@ -1,0 +1,13 @@
+
+- 'id': base_default
+  'type': base
+  'base:name': No Name
+  'base:weight': 1
+  'base:size': 1
+
+- 'id': container_default
+  'type': container
+  'container:capacityWeight': 0
+  'container:capacitySize': 0
+  'container:content':
+
