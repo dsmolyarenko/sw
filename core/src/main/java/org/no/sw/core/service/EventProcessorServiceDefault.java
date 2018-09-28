@@ -46,9 +46,10 @@ public class EventProcessorServiceDefault implements EventProcessorService {
                 Nature nature = natureService.getNature(t);
                 if (nature == null) {
                     logger.error("Nature was not bound for the type: {}", t);
-                    return;
+                    return false;
                 }
                 nature.process(base, e);
+                return true;
             });
         } catch (Throwable t) {
             logger.error("Event process failed " + e, t);

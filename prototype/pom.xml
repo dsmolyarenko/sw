@@ -13,6 +13,12 @@
     <artifactId>prototype</artifactId>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.no.sw</groupId>
+            <artifactId>core</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
