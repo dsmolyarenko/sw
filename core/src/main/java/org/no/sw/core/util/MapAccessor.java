@@ -2,8 +2,10 @@ package org.no.sw.core.util;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 
@@ -43,6 +45,10 @@ public class MapAccessor {
         }
     }
 
+    public Map<String, String> getMap() {
+        return map;
+    }
+
     public String getProperty(String name) {
         return map.get(getKey(name));
     }
@@ -72,9 +78,48 @@ public class MapAccessor {
             return map.remove(k);
         } else {
             String result = v.substring(index + 1);
-            map.put(k, v.substring(0, index - 1));
+            map.put(k, v.substring(0, index));
             return result;
         }
+    }
+
+    public Iterable<String> getPropertyValues(String name) {
+        String v = map.get(getKey(name));
+        return () -> new Iterator<String>() {
+
+            int s;
+            int e = -1;
+
+            {
+                tryNext();
+            }
+
+            private void tryNext() {
+                s = e + 1;
+                if (v == null) {
+                    return;
+                }
+                e = v.indexOf(',', s);
+                if (e == -1) {
+                    e = v.length();
+                }
+            }
+
+            @Override
+            public boolean hasNext() {
+                return s < e;
+            }
+
+            @Override
+            public String next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                String result = v.substring(s, e);
+                tryNext();
+                return result;
+            }
+        };
     }
 
     public <T extends Throwable> int getPropertyIterator(String name, Consumer<String, T> c) throws T {
@@ -128,11 +173,20 @@ public class MapAccessor {
         return map.compute(getKey(name), (k, v) -> StringUtils.isEmpty(v) ? value : (v.contains(value) ? v : v + "," + value));
     }
 
-    public void addProperties(MapAccessor properties, String... excludes) {
+    public void addPropertiesExcluding(MapAccessor properties, String... excludes) {
         Set<String> excludedKeys = new HashSet<>(Arrays.asList(excludes));
         properties.map.forEach((k, v) -> {
             if (!excludedKeys.contains(k)) {
                 addProperty(k, v);
+            }
+        });
+    }
+
+    public void setPropertiesExcluding(MapAccessor properties, String... excludes) {
+        Set<String> excludedKeys = new HashSet<>(Arrays.asList(excludes));
+        properties.map.forEach((k, v) -> {
+            if (!excludedKeys.contains(k)) {
+                setProperty(k, v);
             }
         });
     }

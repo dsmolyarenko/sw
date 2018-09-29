@@ -5,8 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.TreeMap;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class MapAccessorTest {
 
@@ -15,25 +15,25 @@ public class MapAccessorTest {
         MapAccessor accessor = MapAccessor.of(new TreeMap<>());
 
         accessor.setProperty("test", "v0");
-        Assert.assertEquals("v0", accessor.getProperty("test"));
+        Assertions.assertEquals("v0", accessor.getProperty("test"));
 
         accessor.addProperty("test", "v0");
-        Assert.assertEquals("v0", accessor.getProperty("test"));
+        Assertions.assertEquals("v0", accessor.getProperty("test"));
 
         accessor.addProperty("test", "v1");
-        Assert.assertEquals("v0,v1", accessor.getProperty("test"));
+        Assertions.assertEquals("v0,v1", accessor.getProperty("test"));
 
         accessor.setProperty("test", "v0,v1,v2");
         accessor.delProperty("test", "v0");
-        Assert.assertEquals("v1,v2", accessor.getProperty("test"));
+        Assertions.assertEquals("v1,v2", accessor.getProperty("test"));
 
         accessor.setProperty("test", "v0,v1,v2");
         accessor.delProperty("test", "v1");
-        Assert.assertEquals("v0,v2", accessor.getProperty("test"));
+        Assertions.assertEquals("v0,v2", accessor.getProperty("test"));
 
         accessor.setProperty("test", "v0,v1,v2");
         accessor.delProperty("test", "v2");
-        Assert.assertEquals("v0,v1", accessor.getProperty("test"));
+        Assertions.assertEquals("v0,v1", accessor.getProperty("test"));
     }
 
     @Test
@@ -41,16 +41,16 @@ public class MapAccessorTest {
         MapAccessor accessor = MapAccessor.of(new TreeMap<>());
 
         accessor.setProperty("test", "");
-        Assert.assertEquals(0, accessor.getPropertySize("test"));
-        
+        Assertions.assertEquals(0, accessor.getPropertySize("test"));
+
         accessor.setProperty("test", "v0");
-        Assert.assertEquals(1, accessor.getPropertySize("test"));
+        Assertions.assertEquals(1, accessor.getPropertySize("test"));
 
         accessor.setProperty("test", "v0,v1");
-        Assert.assertEquals(2, accessor.getPropertySize("test"));
+        Assertions.assertEquals(2, accessor.getPropertySize("test"));
 
         accessor.setProperty("test", "v0,v1,v2");
-        Assert.assertEquals(3, accessor.getPropertySize("test"));
+        Assertions.assertEquals(3, accessor.getPropertySize("test"));
     }
 
     @Test
@@ -62,22 +62,44 @@ public class MapAccessorTest {
         result.clear();
         accessor.setProperty("test", "");
         accessor.getPropertyIterator("test", v -> result.add(v));
-        Assert.assertEquals(0, result.size());
+        Assertions.assertEquals(0, result.size());
 
         result.clear();
         accessor.setProperty("test", "v0");
         accessor.getPropertyIterator("test", v -> result.add(v));
-        Assert.assertEquals(1, result.size());
+        Assertions.assertEquals(1, result.size());
 
         result.clear();
         accessor.setProperty("test", "v0,v1");
         accessor.getPropertyIterator("test", v -> result.add(v));
-        Assert.assertEquals(Arrays.asList("v0", "v1"), result);
+        Assertions.assertEquals(Arrays.asList("v0", "v1"), result);
 
         result.clear();
         accessor.setProperty("test", "v0,v1,v2");
         accessor.getPropertyIterator("test", v -> result.add(v));
-        Assert.assertEquals(Arrays.asList("v0", "v1", "v2"), result);
+        Assertions.assertEquals(Arrays.asList("v0", "v1", "v2"), result);
 
+    }
+
+    @Test
+    public void testPropertyStack() {
+        MapAccessor accessor = MapAccessor.of(new TreeMap<>());
+
+        accessor.setProperty("test", "v0,v1,v2");
+        Assertions.assertEquals("v0,v1,v2", accessor.getProperty("test"));
+
+        accessor.addProperty("test", "v0");
+        accessor.addProperty("test", "v1");
+        accessor.addProperty("test", "v2");
+        Assertions.assertEquals("v0,v1,v2", accessor.getProperty("test"));
+
+        Assertions.assertEquals("v2", accessor.popProperty("test"));
+        Assertions.assertEquals("v0,v1", accessor.getProperty("test"));
+
+        Assertions.assertEquals("v1", accessor.popProperty("test"));
+        Assertions.assertEquals("v0", accessor.getProperty("test"));
+
+        Assertions.assertEquals("v0", accessor.popProperty("test"));
+        Assertions.assertEquals(null, accessor.getProperty("test"));
     }
 }

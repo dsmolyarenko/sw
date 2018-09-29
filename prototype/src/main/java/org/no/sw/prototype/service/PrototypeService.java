@@ -1,6 +1,5 @@
 package org.no.sw.prototype.service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -18,8 +17,9 @@ public interface PrototypeService {
 
         private final List<String> ids;
 
-        public DependencyUnesolvedException() {
-            this.ids = new ArrayList<>();
+        public DependencyUnesolvedException(List<String> ids) {
+            super("Unresolved items: " + ids);
+            this.ids = ids;
         }
 
         public List<String> getIds() {
