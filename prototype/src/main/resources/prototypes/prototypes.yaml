@@ -1,0 +1,43 @@
+
+- 'id': p_base_default
+  'type': base
+  'base:name': No Name
+  'base:weight': 1
+  'base:size': 1
+
+- 'id': p_container_default
+  'type': container
+  'container:capacityWeight': 0
+  'container:capacitySize': 0
+  'container:content':
+
+- 'id': p_transition_default
+  'type': transition
+
+- 'id': p_world
+  'parent': p_base_default,p_container_default
+  'base:name': SW
+  'base:weight': 0
+  'base:size': 0
+  'container:capacityWeight': 0
+  'container:capacitySize': 0
+
+- 'id': p_world_zone
+  'parent': p_base_default,p_container_default
+  'base:name': SW
+  'base:weight': 0
+  'base:size': 0
+  'container:capacityWeight': 0
+  'container:capacitySize': 0
+
+- 'id': p_world_zone_cell
+  'parent': p_base_default,p_container_default
+  'base:name': SW
+  'base:weight': 0
+  'base:size': 0
+  'container:capacityWeight': 0
+  'container:capacitySize': 0
+
+- 'id': p_transition
+  'parent': p_base_default,p_transition_default
+

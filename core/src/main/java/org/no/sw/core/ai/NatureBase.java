@@ -12,6 +12,7 @@ public class NatureBase extends Nature {
     protected Map<String, String> getTypeProperties() {
         return Maps.<String, String>of()
                 .put("name")
+                .put("description")
                 .put("weight")
                 .put("size")
                 .put("parent")

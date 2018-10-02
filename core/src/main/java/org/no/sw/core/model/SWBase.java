@@ -18,6 +18,12 @@ public class SWBase {
         this.id = id;
     }
 
+    public SWBase(String id, Map<String, String> properties) {
+        super();
+        this.id = id;
+        this.properties = properties;
+    }
+
     public String getId() {
         return id;
     }

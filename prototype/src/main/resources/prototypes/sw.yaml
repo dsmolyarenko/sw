@@ -1,0 +1,33 @@
+- 'id': test
+  'prototype': p_world
+  'base:name': SW
+
+- 'id': test_zone
+  'prototype': p_world_zone
+  'base:name': Test Zone
+  'base:parent': test
+
+- 'id': test_zone_cell_11
+  'prototype': p_world_zone_cell
+  'base:name': Test Cell 11
+  'base:parent': test_zone
+
+- 'id': test_zone_cell_11
+  'prototype': p_world_zone_cell
+  'base:name': Test Cell 11
+  'base:parent': test_zone
+
+- 'id': test_zone_cell_12
+  'prototype': p_world_zone_cell
+  'base:name': Test Cell 12
+  'base:parent': test_zone
+
+- 'id': test_zone_cell_21
+  'prototype': p_world_zone_cell
+  'base:name': Test Cell 21
+  'base:parent': test_zone
+
+- 'id': test_zone_cell_22
+  'prototype': p_world_zone_cell
+  'base:name': Test Cell 22
+  'base:parent': test_zone

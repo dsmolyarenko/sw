@@ -25,9 +25,5 @@ public interface PrototypeService {
         public List<String> getIds() {
             return ids;
         }
-
-        public void addId(String id) {
-            ids.add(id);
-        }
     }
 }

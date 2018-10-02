@@ -11,11 +11,10 @@ public class NatureContainer extends Nature {
     @Override
     protected Map<String, String> getTypeProperties() {
         return Maps.<String, String>of()
-                .put("content")
                 .put("capacityWeight")
                 .put("capacitySize")
                 .build();
     }
-    
-    
+
+
 }

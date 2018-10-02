@@ -28,8 +28,12 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 @Component
 public class PrototypeLoader {
 
-    @Autowired
     private PrototypeService prototypeService;
+
+    @Autowired
+    public void setPrototypeService(PrototypeService prototypeService) {
+        this.prototypeService = prototypeService;
+    }
 
     private final ObjectMapper objectMapper;
 
@@ -43,7 +47,7 @@ public class PrototypeLoader {
     public void load() throws IOException {
         ResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver();
 
-        Resource[] resources = patternResolver.getResources("classpath*:*.yaml");
+        Resource[] resources = patternResolver.getResources("classpath*:/prototypes/*.yaml");
         for (Resource resource : resources) {
             load(resource);
         }

@@ -24,7 +24,6 @@ public class CommandProcessorContainerMoveTo extends CommandProcessorAdaptor<Com
         }
 
         MapAccessor.of(source.getProperties(), "base").setProperty("parent", target.getId());
-        MapAccessor.of(target.getProperties(), "container").addProperty("content", source.getId());
 
         contentService.update(source, target);
     }
