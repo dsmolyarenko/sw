@@ -5,8 +5,7 @@ import java.util.concurrent.BlockingQueue;
 
 import org.no.sw.core.ai.Nature;
 import org.no.sw.core.event.Event;
-import org.no.sw.core.model.SWBase;
-import org.no.sw.core.util.MapAccessor;
+import org.no.sw.core.model.Source;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,20 +36,18 @@ public class EventProcessorServiceDefault implements EventProcessorService {
     public void process(String id, Event e) {
         logger.debug("Event process started {}", e);
         try {
-            SWBase base = contentService.get(id);
-            if (base == null) {
+            Source source = contentService.getById(id);
+            if (source == null) {
                 throw new IllegalStateException("Root element does not exist");
             }
-            MapAccessor mapAccessor = MapAccessor.of(base.getProperties());
-            mapAccessor.getPropertyIterator("type", t -> {
+            for (String t : source.getPropertyValues("type")) {
                 Nature nature = natureService.getNature(t);
                 if (nature == null) {
                     logger.error("Nature was not bound for the type: {}", t);
-                    return false;
+                    continue;
                 }
-                nature.process(base, e);
-                return true;
-            });
+                nature.process(source, e);
+            }
         } catch (Throwable t) {
             logger.error("Event process failed " + e, t);
         }

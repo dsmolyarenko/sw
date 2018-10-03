@@ -1,19 +1,18 @@
 package org.no.sw.core.service;
 
-import java.util.List;
+import java.util.Collection;
 
-import org.no.sw.core.model.SWBase;
-import org.no.sw.core.util.MapAccessor;
+import org.no.sw.core.model.Source;
 
 public interface ContentService {
 
-    MapAccessor getProperties(String id);
+    Source getById(String id);
 
-    SWBase get(String id);
+    Collection<Source> getAll(int limit);
 
-    List<SWBase> getAll();
+    Collection<Source> find(String field, String value, int limit);
 
-    SWBase create(String id);
+    void save(Source... sources);
 
-    void update(SWBase... bases);
+    void save(Collection<Source> sources);
 }

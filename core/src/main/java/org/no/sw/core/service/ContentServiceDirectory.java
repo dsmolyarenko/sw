@@ -3,23 +3,21 @@ package org.no.sw.core.service;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -29,9 +27,7 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.RAMDirectory;
-import org.no.sw.core.model.SWBase;
-import org.no.sw.core.util.MapAccessor;
+import org.no.sw.core.model.Source;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -39,153 +35,79 @@ public class ContentServiceDirectory implements ContentService {
 
     private final Analyzer analyzer = new StandardAnalyzer();
 
+    private final QueryParser qp = new QueryParser("", analyzer);
+
     private final Directory directory;
 
-    public ContentServiceDirectory() {
-        this.directory = new RAMDirectory();
+    public ContentServiceDirectory(Directory directory) {
+        this.directory = directory;
     }
 
     @Override
-    public MapAccessor getProperties(String id) {
-        SWBase base = get(id);
-        if (base == null) {
-            return null;
+    public Source getById(String id) {
+        for (Document document : read(new TermQuery(new Term("id", id)), 1)) {
+            return toSource(document);
         }
-        return MapAccessor.of(base.getProperties());
+        return null;
     }
 
     @Override
-    public SWBase get(String id) {
+    public Collection<Source> getAll(int limit) {
+        List<Source> sources = new ArrayList<>();
+        for (Document document : read(createQuery("*:*"), limit)) {
+            sources.add(toSource(document));
+        }
+        return sources;
+    }
+
+    @Override
+    public Collection<Source> find(String field, String value, int limit) {
+        List<Source> sources = new ArrayList<>();
+        for (Document document : read(new TermQuery(new Term(field, value)), limit)) {
+            sources.add(toSource(document));
+        }
+        return sources;
+    }
+
+    private List<Document> read(Query q, int limit) {
         try (IndexReader reader = DirectoryReader.open(directory)) {
             final IndexSearcher searcher = new IndexSearcher(reader);
-            Term term = new Term("id", id);
-            TopDocs result = searcher.search(new TermQuery(term), 1);
+            TopDocs result = searcher.search(q, limit);
             if (result.totalHits == 0) {
                 return null;
             }
-            return map(reader.document(result.scoreDocs[0].doc));
+            List<Document> documents = new ArrayList<>();
+            for (ScoreDoc sd : result.scoreDocs) {
+                documents.add(reader.document(sd.doc));
+            }
+            return documents;
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
     @Override
-    public List<SWBase> getAll() {
-        try (IndexReader reader = DirectoryReader.open(directory)) {
-            final IndexSearcher searcher = new IndexSearcher(reader);
-
-            QueryParser qp = new QueryParser("", new StandardAnalyzer());
-
-            Query q;
-            try {
-                q = qp.parse("*:*");
-            } catch (ParseException e) {
-                throw new RuntimeException(e);
-            }
-            TopDocs topDocs = searcher.search(q, Integer.MAX_VALUE);
-
-            List<SWBase> result = new ArrayList<>();
-            for (ScoreDoc sd : topDocs.scoreDocs) {
-                Document document = reader.document(sd.doc);
-                result.add(map(document));
-            }
-            return result;
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
-    private SWBase map(Document document) {
-        SWBase t = new SWBase(document.get("id"));
-        document.forEach(f -> {
-            if (f.name().equals("id")) {
-                return;
-            }
-            t.getProperties().put(f.name(), f.stringValue());
-        });
-        return t;
+    public void save(Source... sources) {
+        save(Arrays.asList(sources));
     }
 
     @Override
-    public SWBase create(String id) {
-        IndexWriterConfig indexWriterConfig = createConfig();
-
-        Document document;
-        try (IndexWriter writer = new IndexWriter(directory, indexWriterConfig)) {
-            document = new Document();
-            document.add(new StringField("id", id, Store.YES));
-            writer.addDocument(document);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-        return map(document);
+    public void save(Collection<Source> sources) {
+        saveDocuments(createSaveTasks(sources));
     }
 
-    @Override
-    public void update(SWBase... bases) {
-        updateDocuments(createDocumentsUpdate(bases));
-    }
-
-    private Consumer<IndexWriter> createDocumentUpdate(SWBase t) {
-        Term term = new Term("id", t.getId());
-
-        Document document;
-        try (IndexReader reader = DirectoryReader.open(directory)) {
-            TopDocs result = new IndexSearcher(reader).search(new TermQuery(term), 1);
-            if (result.totalHits == 0) {
-                return null;
-            }
-            document = reader.document(result.scoreDocs[0].doc);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-
-        Map<String, IndexableField> fields = new HashMap<>();
-        document.forEach(f -> fields.put(f.name(), f));
-
-        Set<String> fieldNames = new HashSet<>();
-        fieldNames.addAll(fields.keySet());
-        fieldNames.addAll(t.getProperties().keySet());
-
-        for (String fieldName : fieldNames) {
-            if (fieldName.equals("id")) {
-                continue;
-            }
-            IndexableField field = fields.get(fieldName);
-            boolean d = false;
-            boolean a = false;
-            if (field == null) {
-                a = true;
-            } else {
-                if (t.getProperties().get(fieldName) == null) {
-                    d = true;
-                } else {
-                    if (!t.getProperties().get(fieldName).equals(field.stringValue())) {
-                        d = true;
-                        a = true;
-                    }
-                }
-            }
-            if (d) {
-                document.removeField(fieldName);
-            }
-            if (a) {
-                document.add(new StringField(fieldName, t.getProperties().get(fieldName), Field.Store.YES));
-            }
-        }
-
-        return w -> w.updateDocument(term, document);
-    }
-
-    private List<Consumer<IndexWriter>> createDocumentsUpdate(SWBase... bases) {
+    private List<Consumer<IndexWriter>> createSaveTasks(Collection<Source> sources) {
         List<Consumer<IndexWriter>> updates = new ArrayList<>();
-        for (SWBase base : bases) {
-            updates.add(createDocumentUpdate(base));
-        }
+        sources.forEach(s -> updates.add(createSaveTask(s)));
         return updates;
     }
 
-    private void updateDocuments(List<Consumer<IndexWriter>> updaters) {
+    private Consumer<IndexWriter> createSaveTask(Source source) {
+        Term term = new Term("id", source.getId());
+        return w -> w.updateDocument(term, toDocument(source));
+    }
+
+    private void saveDocuments(List<Consumer<IndexWriter>> updaters) {
         try (IndexWriter writer = new IndexWriter(directory, createConfig())) {
             for (Consumer<IndexWriter> updater : updaters) {
                 updater.accept(writer);
@@ -200,6 +122,27 @@ public class ContentServiceDirectory implements ContentService {
         IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer);
         indexWriterConfig.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
         return indexWriterConfig;
+    }
+
+    private Source toSource(Document document) {
+        SortedMap<String, String> properties = new TreeMap<>();
+        document.forEach(f -> properties.put(f.name(), f.stringValue()));
+        return Source.of(properties);
+    }
+
+    private Document toDocument(Source source) {
+        Document document = new Document();
+        source.getProperties().forEach((fieldName, value)
+                -> document.add(new StringField(fieldName, value, Field.Store.YES)));
+        return document;
+    }
+
+    private Query createQuery(String query) {
+        try {
+            return qp.parse(query);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private interface Consumer<E> {

@@ -6,24 +6,24 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.TreeMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
-import org.no.sw.core.util.MapAccessor;
+import org.no.sw.core.model.Source;
+import org.no.sw.core.model.Target;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ProtypeServiceDefault implements PrototypeService {
+public class PrototypeServiceDefault implements PrototypeService {
 
-    private final Map<String, MapAccessor> prototypes;
+    private final Map<String, Source> prototypes;
 
-    private final Queue<MapAccessor> queue;
+    private final Queue<Source> queue;
 
     private final Lock queueLock = new ReentrantLock();
 
-    public ProtypeServiceDefault() {
+    public PrototypeServiceDefault() {
         this.prototypes = new LinkedHashMap<>();
         this.queue = new LinkedList<>();
     }
@@ -32,19 +32,19 @@ public class ProtypeServiceDefault implements PrototypeService {
     public void collect(Map<String, String> prototype) {
         queueLock.lock();
         try {
-            collect(MapAccessor.of(prototype));
+            collect(Source.of(prototype));
         } finally {
             queueLock.unlock();
         }
     }
 
-    private void collect(MapAccessor properties) {
-        String id = properties.getProperty("id");
+    private void collect(Source properties) {
+        String id = properties.getId();
 
         // check if all dependencies
-        List<MapAccessor> parentsProperties = new ArrayList<>();
+        List<Source> parentsProperties = new ArrayList<>();
         for (String parentId : properties.getPropertyValues("parent")) {
-            MapAccessor parent = prototypes.get(parentId);
+            Source parent = prototypes.get(parentId);
             if (parent != null) {
                 parentsProperties.add(parent);
             } else {
@@ -56,8 +56,8 @@ public class ProtypeServiceDefault implements PrototypeService {
         }
 
         if (parentsProperties.size() > 0) {
-            MapAccessor prentPropertiesResult = MapAccessor.of(new TreeMap<>());
-            for (MapAccessor parentProperties : parentsProperties) {
+            Target prentPropertiesResult = Target.of();
+            for (Source parentProperties : parentsProperties) {
                 prentPropertiesResult.addPropertiesExcluding(parentProperties, "id", "parent");
             }
             // override parent properties
@@ -70,7 +70,7 @@ public class ProtypeServiceDefault implements PrototypeService {
     }
 
     @Override
-    public Map<String, MapAccessor> getAll() throws DependencyUnesolvedException {
+    public Map<String, Source> getAll() throws DependencyUnesolvedException {
         resolve(); // check if there are some unresolved stuff
         return prototypes;
     }
@@ -88,7 +88,7 @@ public class ProtypeServiceDefault implements PrototypeService {
                 }
                 if (queue.size() == size) { // no one was resolved
                     throw new DependencyUnesolvedException(queue.stream().map(e -> {
-                        return e.getProperty("id") + " -> " + e.getProperty("parent");
+                        return e.getPropertyValue("id") + " -> " + e.getPropertyValue("parent");
                     }).collect(Collectors.toList()));
                 }
             }

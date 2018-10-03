@@ -2,16 +2,17 @@ package org.no.sw.prototype.service;
 
 import java.util.Arrays;
 import java.util.Map;
-import java.util.TreeMap;
 
+import org.apache.lucene.store.RAMDirectory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.no.sw.core.model.Target;
 import org.no.sw.core.service.ContentService;
 import org.no.sw.core.service.ContentServiceDirectory;
 import org.no.sw.core.service.IdentyService;
 import org.no.sw.core.service.IdentyServiceDefault;
-import org.no.sw.core.util.MapAccessor;
+
 
 
 public class ResourceServiceDefaultTest {
@@ -27,8 +28,8 @@ public class ResourceServiceDefaultTest {
     @BeforeEach
     public void setup() {
         this.identyService = new IdentyServiceDefault();
-        this.prototypeService = new ProtypeServiceDefault();
-        this.contentService = new ContentServiceDirectory();
+        this.prototypeService = new PrototypeServiceDefault();
+        this.contentService = new ContentServiceDirectory(new RAMDirectory());
 
         ResourceServiceDefault resourceServiceDefault = new ResourceServiceDefault();
         resourceServiceDefault.setIdentyService(identyService);
@@ -40,31 +41,30 @@ public class ResourceServiceDefaultTest {
     @Test
     public void testDefaults() {
 
-        MapAccessor prototype1 = MapAccessor.of(new TreeMap<>());
-        prototype1.setProperty("id", "p_prototype");
-        prototype1.setProperty("type", "type");
-        prototype1.setProperty("type:property", "value");
-        prototypeService.collect(prototype1.getMap());
+        Target prototype1 = Target.of();
+        prototype1.setPropertyValue("id", "p_prototype");
+        prototype1.setPropertyValue("type", "type");
+        prototype1.setPropertyValue("type:property", "value");
+        prototypeService.collect(prototype1.getProperties());
 
-        MapAccessor o1 = MapAccessor.of(new TreeMap<>());
-        o1.setProperty("id", "o1");
-        o1.setProperty("prototype", "p_prototype");
-        o1.setProperty("b:parent", "o0");
+        Target o1 = Target.of();
+        o1.setPropertyValue("id", "o1");
+        o1.setPropertyValue("prototype", "p_prototype");
+        o1.setPropertyValue("b:parent", "o0");
 
-        MapAccessor o2 = MapAccessor.of(new TreeMap<>());
-        o2.setProperty("id", "o2");
-        o2.setProperty("prototype", "p_prototype");
-        o2.setProperty("b:parent", "o0");
+        Target o2 = Target.of();
+        o2.setPropertyValue("id", "o2");
+        o2.setPropertyValue("prototype", "p_prototype");
+        o2.setPropertyValue("b:parent", "o0");
 
-        MapAccessor o0 = MapAccessor.of(new TreeMap<>());
-        o0.setProperty("id", "o0");
-        o0.setProperty("prototype", "p_prototype");
+        Target o0 = Target.of();
+        o0.setPropertyValue("id", "o0");
+        o0.setPropertyValue("prototype", "p_prototype");
 
-        Map<String, String> result = resourceService.load(Arrays.asList(o1.getMap(), o2.getMap(), o0.getMap()));
+        Map<String, String> result = resourceService.load(Arrays.asList(o1.getProperties(), o2.getProperties(), o0.getProperties()));
 
         String id = result.get("o0");
         Assertions.assertNotNull(id);
-        System.out.println(contentService.getAll());
-        Assertions.assertNotNull(contentService.get(id));
+        Assertions.assertNotNull(contentService.getById(id));
     }
 }

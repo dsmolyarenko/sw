@@ -3,13 +3,13 @@ package org.no.sw.prototype.service;
 import java.util.List;
 import java.util.Map;
 
-import org.no.sw.core.util.MapAccessor;
+import org.no.sw.core.model.Source;
 
 public interface PrototypeService {
 
     void collect(Map<String, String> prototype);
 
-    Map<String, MapAccessor> getAll() throws DependencyUnesolvedException;
+    Map<String, Source> getAll() throws DependencyUnesolvedException;
 
     public class DependencyUnesolvedException extends RuntimeException {
 

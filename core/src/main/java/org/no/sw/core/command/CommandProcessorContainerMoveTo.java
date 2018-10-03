@@ -1,8 +1,8 @@
 package org.no.sw.core.command;
 
-import org.no.sw.core.model.SWBase;
+import org.no.sw.core.ai.NatureBase;
+import org.no.sw.core.model.Source;
 import org.no.sw.core.service.ContentService;
-import org.no.sw.core.util.MapAccessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -14,18 +14,19 @@ public class CommandProcessorContainerMoveTo extends CommandProcessorAdaptor<Com
 
     @Override
     public void process(Command c) {
-        SWBase source = contentService.get(c.sourceId);
+        Source source = contentService.getById(c.sourceId);
         if (source == null) {
             throw new IllegalStateException("Unable to find object: " + c.sourceId);
         }
-        SWBase target = contentService.get(c.targetId);
-        if (target == null) {
+        Source parent = contentService.getById(c.targetId);
+        if (parent == null) {
             throw new IllegalStateException("Unable to find object: " + c.targetId);
         }
 
-        MapAccessor.of(source.getProperties(), "base").setProperty("parent", target.getId());
-
-        contentService.update(source, target);
+        boolean updated = NatureBase.setParent(source, parent);
+        if (updated) {
+            contentService.save(source);
+        }
     }
 
     public static class Command implements CommandProcessor.Command {

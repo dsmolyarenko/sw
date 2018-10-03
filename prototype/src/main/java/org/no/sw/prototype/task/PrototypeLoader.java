@@ -9,7 +9,7 @@ import java.util.TreeMap;
 
 import javax.annotation.PostConstruct;
 
-import org.no.sw.core.util.MapAccessor;
+import org.no.sw.core.model.Source;
 import org.no.sw.prototype.service.PrototypeService;
 import org.no.sw.prototype.service.PrototypeService.DependencyUnesolvedException;
 import org.slf4j.Logger;
@@ -53,7 +53,7 @@ public class PrototypeLoader {
         }
 
         try {
-            Map<String, MapAccessor> prototypes = prototypeService.getAll();
+            Map<String, Source> prototypes = prototypeService.getAll();
             logger.info("Loaded {} prototypes", prototypes);
         } catch (DependencyUnesolvedException e) {
             logger.warn("Unable to resolve dependencies: {}", e.getIds());

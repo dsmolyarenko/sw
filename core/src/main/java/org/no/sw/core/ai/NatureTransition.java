@@ -1,6 +1,6 @@
 package org.no.sw.core.ai;
 
-import java.util.Map;
+import java.util.Set;
 
 import org.no.sw.core.command.CommandProcessor;
 import org.no.sw.core.command.CommandProcessorAdaptor;
@@ -11,10 +11,10 @@ import org.springframework.stereotype.Component;
 public class NatureTransition extends Nature {
 
     @Override
-    protected Map<String, String> getTypeProperties() {
+    protected Set<String> getTypeProperties() {
         return Maps.<String, String>of()
                 .put("point")
-                .build();
+                .build().keySet();
     }
 
     @Component

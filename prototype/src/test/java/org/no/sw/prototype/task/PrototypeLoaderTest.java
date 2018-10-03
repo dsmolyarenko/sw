@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.no.sw.prototype.service.PrototypeService;
-import org.no.sw.prototype.service.ProtypeServiceDefault;
+import org.no.sw.prototype.service.PrototypeServiceDefault;
 
 public class PrototypeLoaderTest {
 
@@ -15,7 +15,7 @@ public class PrototypeLoaderTest {
 
     @BeforeEach
     public void setup() {
-        this.prototypeService = new ProtypeServiceDefault();
+        this.prototypeService = new PrototypeServiceDefault();
         this.prototypeLoader = new PrototypeLoader();
         prototypeLoader.setPrototypeService(prototypeService);
     }

@@ -1,6 +1,6 @@
 package org.no.sw.core.ai;
 
-import java.util.Map;
+import java.util.Set;
 
 import org.no.sw.core.util.Maps;
 import org.springframework.stereotype.Component;
@@ -9,12 +9,11 @@ import org.springframework.stereotype.Component;
 public class NatureContainer extends Nature {
 
     @Override
-    protected Map<String, String> getTypeProperties() {
+    protected Set<String> getTypeProperties() {
         return Maps.<String, String>of()
                 .put("capacityWeight")
                 .put("capacitySize")
-                .build();
+                .build().keySet();
     }
-
 
 }

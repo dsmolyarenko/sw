@@ -1,7 +1,7 @@
 package org.no.sw.core.command;
 
 import org.no.sw.core.ai.Nature;
-import org.no.sw.core.model.SWBase;
+import org.no.sw.core.model.Source;
 import org.no.sw.core.service.ContentService;
 import org.no.sw.core.service.NatureService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +18,8 @@ public class CommandProcessorAddNature extends CommandProcessorAdaptor<CommandPr
 
     @Override
     public void process(Command c) {
-        SWBase base = contentService.get(c.id);
-        if (base == null) {
+        Source source = contentService.getById(c.id);
+        if (source == null) {
             throw new IllegalStateException("Unable to find object: " + c.id);
         }
         Nature nature = natureService.getNature(c.type);
@@ -27,9 +27,9 @@ public class CommandProcessorAddNature extends CommandProcessorAdaptor<CommandPr
             throw new IllegalStateException("Unregistered nature type: " + c.type);
         }
 
-        boolean updated = nature.add(base);
+        boolean updated = nature.add(source);
         if (updated) {
-            contentService.update(base);
+            contentService.save(source);
         }
     }
 

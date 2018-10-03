@@ -3,12 +3,11 @@ package org.no.sw.prototype.service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
-import org.no.sw.core.model.SWBase;
+import org.no.sw.core.model.Source;
+import org.no.sw.core.model.Target;
 import org.no.sw.core.service.ContentService;
 import org.no.sw.core.service.IdentyService;
-import org.no.sw.core.util.MapAccessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -52,13 +51,13 @@ public class ResourceServiceDefault implements ResourceService {
         objects.forEach(v -> {
             String prototypeId = v.get("prototype");
             Assert.hasText(prototypeId, () -> "'prototype' is not defined for object: " + v);
-            MapAccessor prototype = prototypeService.getAll().get(prototypeId);
+            Source prototype = prototypeService.getAll().get(prototypeId);
             Assert.notNull(prototype, () -> "prototype was not defined: " + prototypeId);
 
-            MapAccessor baseAccessor = MapAccessor.of(new TreeMap<>());
+            Target object = Target.of();
 
             // add prototype properties
-            baseAccessor.addPropertiesExcluding(prototype, "id");
+            object.addPropertiesExcluding(prototype, "id");
 
             // add object properties
             for (String key : v.keySet()) {
@@ -66,13 +65,11 @@ public class ResourceServiceDefault implements ResourceService {
                 if (result.containsKey(value)) {
                     value = result.get(value);
                 }
-                baseAccessor.setProperty(key, value);
+                object.setPropertyValue(key, value);
             }
 
             // store object
-            String id = baseAccessor.delProperty("id");
-            contentService.create(id);
-            contentService.update(new SWBase(id, baseAccessor.getMap()));
+            contentService.save(object);
         });
 
         return result;
